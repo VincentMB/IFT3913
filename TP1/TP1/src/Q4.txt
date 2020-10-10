@@ -1,0 +1,66 @@
+Pour répondre à cette question, il suffit de trier les données des fichiers .csv en ordre croissant selon leur BC respectif.
+(Fait à l'aide d'excel)
+
+Nous retirons les résultats où BC=0, qui arrive principalement en cas où il n'y a pas de commentaire ou par protection de
+division par 0 (voir calcul de BC des classes/méthodes), puisque ces méthodes/classes sont souvent triviales (méthodes de test ou get/setters)
+-----------------------------------------
+En observant le résultat nous pouvons voir que les classes les moins bien notées sont:
+
+-LineUtils           BC=0.0225
+    *\jfreechart-master\src\main\java\org\jfree\chart\util\LineUtils.java
+
+    Dans cette classe, nous pouvons retrouver beaucoup de 'else if', ce qui ajoute une forte complexité cyclomatique.
+    Bien que pour plusieurs de ces prédicats ont un but assez évidant, il pourrait être bien de spécifier leur utilité
+    avec un petit commentaire descriptif de chaque branche.
+
+-RectangleAnchor     BC=0.0419
+    *\jfreechart-master\src\main\java\org\jfree\chart\ui\RectangleAnchor.java
+
+    Encore une fois, pour cette 'classe' (qui est en fait une enum), une grande quantité de prédicats 'else if'
+    contribue fortement à la complexité cyclomatique de McCabe dans la méthode getAnchorPoint.
+    On peut retrouver beaucoup de Javadoc plus ou moins pertinante, ou du moins triviale,
+    au début de l'enum, et aucune documentation n'est fournie à l'intérieur de la méthode la plus complexe, donc le problème
+    est fortement centralisé à l'intérieur de cette méthode.
+
+-BorderArrangement   BC=0.0424
+    *\jfreechart-master\src\main\java\org\jfree\chart\block\BorderArrangement.java
+
+    Commentaire similaire à la classe précédente. La Javadoc est acceptable, mais la quantité massive de prédicats
+    demande une meilleure documentation interne des différentes méthode, ou sinon d'une javadoc plus exhaustive.
+    Il y a une trop grande quantité de branches 'if' non excpliquées/commentées.
+------------------------------------------
+
+Les méthodes les moins bien notés sont:
+
+-PiePlot.equals_Object     BC=0.000126
+    *\jfreechart-master\src\main\java\org\jfree\chart\plot\PiePlot.java
+
+    Bien que ce soit la méthode la moins bien classée, elle n'est pas la pire "offence" des trois méthodes.
+    Comme cette methode représente une séries d'assignation simple de valeur, elle est assez facile à comprendre.
+    Cependant, elle pourrait être mieux divisée, en indiquant, par exemple,
+    les section ou l'on attribue des labels, les paintMaps, etc. Ceci nous expliquerait d'un rapide coup d'oeuil
+    ce qui est initialisé dans la méthode.
+
+-Crosshair.equals_Object   BC=0.000992
+    *\jfreechart-master\src\main\java\org\jfree\chart\plot\Crosshair.java
+
+    "If" galore! Cette série de "if", bien que conceptuellement simple, est très lourde en terme de complexité cyclomatique.
+    Mis a part quelques lignes de JavaDoc, rien ne nous indique quels "checks" sont faits. Si le but ultime était de réduire
+    à tout prix le nombre de prédicats, on pourrait tout représenter sous un if massif de forme "if(c1 || c2 || ... || cn)".
+    Ceci ne serait pas nécéssairement mieux pour un programmeur/lecteur, mais il y aurait moyen de regrouper en catégorie, ie:
+    //Checking label properties
+    if (!this.labelAnchor.equals(that.labelAnchor) ||
+        this.labelXOffset != that.labelXOffset ||
+        this.labelYOffset != that.labelYOffset){return false}
+    Ceci réduirait la complexité, et regrouperait les éléments sous un même concept.
+
+
+-PiePlot.getLegendItems    BC=0.00185
+   *\jfreechart-master\src\main\java\org\jfree\chart\plot\PiePlot.java
+
+   Bien que 3e dans le "classement", cette méthode est définitivement la pire des 3 en terme de documentation.
+   La javadoc est extremement vague, disant que la méthode retourne une collection d'items sans trop de détails de fonctionnement.
+   Aucun commentaire interne n'est ajouté, malgré une grande quantité de prédicats, et donc une grand complexité cyclomatique.
+   En fait, cette méthode semble simplement trop longue. Elle pourrait être divisée en plusieurs méthodes, par exemple une méthode
+   pour les opérations du grand while(...) et une autre sous-méthode avec les opérations du if(include), fournis avec une
+   JavaDoc appropriée.
